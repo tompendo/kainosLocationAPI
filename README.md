@@ -160,16 +160,6 @@ Navigate between Flow A and Flow B on the dashboard, then click through the prim
 
 ---
 
-## Launching the Visual Designer
-
-To test page and feature tagging against the synthetic URLs, launch the Visual Designer from the browser console:
-
-```javascript
-pendo.designerv2.launchDesigner()
-```
-
----
-
 ## Key files
 
 ```
