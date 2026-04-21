@@ -169,7 +169,7 @@ tr:last-child td { border-bottom: none; }
   FLOW A — Business Cycle Conflicts (URL contains context):
     Browser URL already contains /business-cycle-conflicts
     addTransforms only needs to append the active tab.
-    e.g. /smartaudit/sod/business-cycle-conflicts → addTransforms appends /sod-conflicts-view/review-required
+    e.g. https://gmsng.eu.stage.kainossmart.com/web/#/audit/checkGroupDetails/SEGREGATION_OF_DUTIES_BUSINESS_CYCLE_CONFLICTS → addTransforms appends /sod-conflicts-view/review-required
 
   FLOW B — Customer Defined View (URL contains NO context):
     Browser URL is identical regardless of which check type.
@@ -186,7 +186,7 @@ const pendoState = {
 
 // The base browser URL for each flow — simulates what the SPA actually has in the address bar
 const BROWSER_URLS = {
-  'flow-a': 'https://smartaudit.kainos.com/smartaudit/sod/business-cycle-conflicts',
+  'flow-a': 'https://gmsng.eu.stage.kainossmart.com/web/#/audit/checkGroupDetails/SEGREGATION_OF_DUTIES_BUSINESS_CYCLE_CONFLICTS',
   'flow-b': 'https://gmsng.eu.stage.kainossmart.com/web/#/audit/checkDetails/221'  // same structure for ALL customer-defined check types — only the numeric ID changes
 };
 
@@ -198,7 +198,7 @@ function updatePendoState(u) {
 }
 
 function buildPendoUrl() {
-  const base = BROWSER_URLS[currentFlow] || 'https://smartaudit.kainos.com/smartaudit/sod';
+  const base = BROWSER_URLS[currentFlow] || 'https://gmsng.eu.stage.kainossmart.com/web/#/audit';
   const parts = [];
 
   // Flow B only: inject check type context (not present in browser URL)
@@ -310,9 +310,9 @@ function refreshDebug() {
         <div class="dc-val red">7/7</div>
         <div class="dc-meta">SoD Conflicts · 544 Cases · 3 Tenants</div>
         <div class="dc-url">
-          Browser URL: <strong>/smartaudit/sod/business-cycle-conflicts</strong><br>
-          Pendo sees: <strong>/business-cycle-conflicts/<span style="color:#e53e3e">sod-conflicts-view/review-required</span></strong><br>
-          <span style="color:#276749;">addTransforms appends tab state only</span>
+          Browser URL: <strong>#/audit/checkGroupDetails/SEGREGATION_OF_DUTIES_BUSINESS_CYCLE_CONFLICTS</strong><br>
+          Pendo sees: <strong>/checkGroupDetails/SEGREGATION_OF_DUTIES_BUSINESS_CYCLE_CONFLICTS/<span style="color:#e53e3e">sod-conflicts-view/review-required</span></strong><br>
+          <span style="color:#276749;">addTransforms appends tab state only — check type is already in the URL</span>
         </div>
       </div>
 
