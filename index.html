@@ -174,7 +174,7 @@ tr:last-child td { border-bottom: none; }
   FLOW B — Customer Defined View (URL contains NO context):
     Browser URL is identical regardless of which check type.
     addTransforms must inject the check type context AND the tab.
-    e.g. /smartaudit/sod/check-details → addTransforms injects /expenses-sod-custom-checks/security-groups-view/review-required
+    e.g. https://gmsng.eu.stage.kainossmart.com/web/#/audit/checkDetails/221 → addTransforms injects /expenses-sod-custom-checks/security-groups-view/review-required
 ═══════════════════════════════════════════════════════════
 -->
 <script>
@@ -187,7 +187,7 @@ const pendoState = {
 // The base browser URL for each flow — simulates what the SPA actually has in the address bar
 const BROWSER_URLS = {
   'flow-a': 'https://smartaudit.kainos.com/smartaudit/sod/business-cycle-conflicts',
-  'flow-b': 'https://smartaudit.kainos.com/smartaudit/sod/check-details'  // same for ALL customer-defined check types
+  'flow-b': 'https://gmsng.eu.stage.kainossmart.com/web/#/audit/checkDetails/221'  // same structure for ALL customer-defined check types — only the numeric ID changes
 };
 
 let currentFlow = null;
@@ -324,9 +324,9 @@ function refreshDebug() {
         <div class="dc-val red">5/5</div>
         <div class="dc-meta">SoD Conflicts · 312 Cases · 3 Tenants</div>
         <div class="dc-url">
-          Browser URL: <strong>/smartaudit/sod/check-details</strong> (same for ALL custom checks)<br>
+          Browser URL: <strong>#/audit/checkDetails/221</strong> (same structure for ALL custom checks — numeric ID only)<br>
           Pendo sees: <strong>/<span style="color:#e53e3e">expenses-sod-custom-checks/sod-conflicts-view/review-required</span></strong><br>
-          <span style="color:#744210;">addTransforms must inject check type AND tab state</span>
+          <span style="color:#744210;">addTransforms must inject check type AND tab state — URL has zero context</span>
         </div>
       </div>
 
@@ -336,7 +336,7 @@ function refreshDebug() {
       <div style="font-size:12px;font-weight:700;color:#1a1a2e;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em;">Why these two flows exist</div>
       <p style="font-size:13px;color:#555;line-height:1.7;">
         <strong>Flow A</strong> — Kainos-defined check types (e.g. Business Cycle Conflicts) have their category in the browser URL. Pendo can read this directly. <code style="background:#f5f7fa;padding:1px 5px;border-radius:3px;font-size:12px;">addTransforms</code> only needs to append which tab the user is on — the check type context is already there.<br><br>
-        <strong>Flow B</strong> — Customer-defined check types all share the same browser URL (<code style="background:#f5f7fa;padding:1px 5px;border-radius:3px;font-size:12px;">/check-details</code>). Pendo cannot distinguish between them. <code style="background:#f5f7fa;padding:1px 5px;border-radius:3px;font-size:12px;">addTransforms</code> must inject the check type identity at page load — context available at that moment per Eamon's confirmation — and then update the tab state on each tab click.
+        <strong>Flow B</strong> — Customer-defined check types all share the same URL structure (<code style="background:#f5f7fa;padding:1px 5px;border-radius:3px;font-size:12px;">#/audit/checkDetails/221</code>). The numeric ID changes per check but gives Pendo no context about module or check type — SOD, Privileged Access and Config Change all look identical. <code style="background:#f5f7fa;padding:1px 5px;border-radius:3px;font-size:12px;">addTransforms</code> must inject the check type identity at page load — context is available at that moment per Eamon's confirmation — and then update the tab state on each tab click.
       </p>
     </div>
   </div>
@@ -510,7 +510,8 @@ function refreshDebug() {
 
 <!-- ════════════════════════════════════════
      FLOW B — Customer Defined View
-     Browser URL is /check-details for ALL customer check types.
+     Browser URL is #/audit/checkDetails/{id} for ALL customer check types.
+     The numeric ID changes per check but gives Pendo zero context.
      addTransforms must inject check type context AND tab state.
 ════════════════════════════════════════ -->
 <div class="page-view" id="view-flow-b">
@@ -664,7 +665,7 @@ function refreshDebug() {
   <div class="tab-pane" id="b-pt-description">
     <div class="content"><div class="sec-hd">Description</div>
       <div style="margin-top:16px;background:white;border:1px solid #dde1e7;border-radius:4px;padding:20px;max-width:700px;font-size:13px;color:#555;line-height:1.7;">
-        Customer-defined check type. The browser URL for this view is <code style="background:#f5f7fa;padding:1px 5px;border-radius:3px;">/check-details</code> regardless of which customer check type is loaded. Pendo cannot distinguish this from any other customer check type without the Location API injecting the check type identifier.
+        Customer-defined check type. The browser URL for this view is <code style="background:#f5f7fa;padding:1px 5px;border-radius:3px;">#/audit/checkDetails/221</code> — the numeric ID changes per check type but gives Pendo zero context about module or check type. SOD, Privileged Access and Config Change customer views are completely indistinguishable from each other without the Location API injecting the check type identifier.
       </div>
     </div>
   </div>
@@ -782,7 +783,9 @@ function resetFlowATabs() {
 }
 
 // ── FLOW B: Customer Defined View ────────────────────────────────
-// Browser URL is /check-details for ALL customer check types.
+// Real browser URL: https://gmsng.eu.stage.kainossmart.com/web/#/audit/checkDetails/221
+// The numeric ID changes per check but gives Pendo zero context.
+// SOD, Privileged Access, Config Change customer views are all identical to Pendo.
 // addTransforms must inject the check type identifier AND the tab state.
 function goFlowB() {
   currentFlow = 'flow-b';
