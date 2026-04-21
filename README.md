@@ -33,16 +33,16 @@ Pendo URL: /smartaudit/sod/business-cycle-conflicts/sod-conflicts-view/review-re
 Customer-defined check types all share the same browser URL regardless of which check type is loaded:
 
 ```
-Browser URL: /smartaudit/sod/check-details
+Browser URL: https://gmsng.eu.stage.kainossmart.com/web/#/audit/checkDetails/221
 ```
 
-This URL is identical for every customer-defined check type in the platform. Pendo cannot distinguish between them at all without intervention. `addTransforms` must do two things on every navigation event:
+This URL is identical in structure for every customer-defined check type in the platform. The numeric ID changes per check but gives Pendo zero context — SOD, Privileged Access and Config Change customer views are completely indistinguishable from each other. Pendo cannot distinguish between them at all without intervention. `addTransforms` must do two things on every navigation event:
 
 1. **Inject the check type identifier** — available at component initialisation (page load), not in the URL
 2. **Append the active tab state** — same as Flow A
 
 ```
-Pendo URL: /smartaudit/sod/check-details/expenses-sod-custom-checks/security-groups-view/review-required
+Pendo URL: https://gmsng.eu.stage.kainossmart.com/web/#/audit/checkDetails/221/expenses-sod-custom-checks/security-groups-view/review-required
 ```
 
 ---
@@ -102,7 +102,7 @@ updatePendoState({
   secondaryTab: 'review-required'
 });
 fireTransform();
-// Pendo sees: /smartaudit/sod/check-details/expenses-sod-custom-checks/security-groups-view/review-required
+// Pendo sees: https://gmsng.eu.stage.kainossmart.com/web/#/audit/checkDetails/221/expenses-sod-custom-checks/security-groups-view/review-required
 ```
 
 On every subsequent tab click in Flow B, `checkType` remains in `pendoState` from the initial page load. Only `primaryTab` or `secondaryTab` updates. The injected check type context persists throughout the user's session on that check type without any additional calls.
@@ -111,7 +111,7 @@ On every subsequent tab click in Flow B, `checkType` remains in `pendoState` fro
 
 `pendo.location.setUrl()` disconnects Pendo from the browser URL entirely and requires the application to manually define the URL for every single page — including pages where the browser URL is already perfectly meaningful to Pendo. This would be a significant engineering overhead and a regression for those pages.
 
-`addTransforms` builds on top of the existing browser URL. Pages where the browser URL is already good require zero changes. Only the pages that need context injection (Flow B check types, case-level views) need to write to the shared state module.
+`addTransforms` builds on top of the existing browser URL. Pages where the browser URL is already good require zero changes. Only the pages that need context injection (Flow B check types — `#/audit/checkDetails/{id}`) need to write to the shared state module.
 
 ---
 
@@ -133,17 +133,17 @@ On every subsequent tab click in Flow B, `checkType` remains in `pendoState` fro
 ### Flow B
 
 ```
-/smartaudit/sod/check-details/{checkType}/{primaryTab}/{secondaryTab}
+https://gmsng.eu.stage.kainossmart.com/web/#/audit/checkDetails/221/{checkType}/{primaryTab}/{secondaryTab}
 ```
 
 | Navigation | Pendo URL |
 |---|---|
-| Page load, default tab | `/smartaudit/sod/check-details/expenses-sod-custom-checks/security-groups-view/review-required` |
-| Click SoD Conflicts View | `/smartaudit/sod/check-details/expenses-sod-custom-checks/sod-conflicts-view/review-required` |
-| Click Accepted sub-tab | `/smartaudit/sod/check-details/expenses-sod-custom-checks/sod-conflicts-view/accepted` |
-| Click Cases View | `/smartaudit/sod/check-details/expenses-sod-custom-checks/cases-view/review-required` |
+| Page load, default tab | `…/checkDetails/221/expenses-sod-custom-checks/security-groups-view/review-required` |
+| Click SoD Conflicts View | `…/checkDetails/221/expenses-sod-custom-checks/sod-conflicts-view/review-required` |
+| Click Accepted sub-tab | `…/checkDetails/221/expenses-sod-custom-checks/sod-conflicts-view/accepted` |
+| Click Cases View | `…/checkDetails/221/expenses-sod-custom-checks/cases-view/review-required` |
 
-Without the Location API, all four Flow B URLs above would be identical: `/smartaudit/sod/check-details`. Pendo would see them all as a single page.
+Without the Location API, all four Flow B URLs above would be identical: `#/audit/checkDetails/221`. Pendo would see them all as a single page — and would have no way to distinguish an SOD custom check from a Privileged Access custom check or a Config Change custom check.
 
 ---
 
@@ -184,5 +184,3 @@ README.md    — This file.
 Built by Tom Dowdeswell, Customer Engineer at Pendo, as part of the Kainos SmartAudit POC — April 2026.
 
 Questions: tom.dowdeswell@pendo.io
-
-
