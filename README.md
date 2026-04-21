@@ -19,13 +19,13 @@ This problem exists at two levels and requires two slightly different approaches
 Kainos-defined check types such as *Expenses - SoD - Business Cycle Conflicts* have their category present in the browser URL:
 
 ```
-Browser URL: /smartaudit/sod/business-cycle-conflicts
+Browser URL: https://gmsng.eu.stage.kainossmart.com/web/#/audit/checkGroupDetails/SEGREGATION_OF_DUTIES_BUSINESS_CYCLE_CONFLICTS
 ```
 
-Pendo can read this directly. The only missing information is which tab the user is currently on. `addTransforms` only needs to **append the active tab state** on top of what is already there.
+Pendo can read this directly — `SEGREGATION_OF_DUTIES_BUSINESS_CYCLE_CONFLICTS` is in the URL and tells Pendo exactly what check type this is. The only missing information is which tab the user is currently on. `addTransforms` only needs to **append the active tab state** on top of what is already there.
 
 ```
-Pendo URL: /smartaudit/sod/business-cycle-conflicts/sod-conflicts-view/review-required
+Pendo URL: …/checkGroupDetails/SEGREGATION_OF_DUTIES_BUSINESS_CYCLE_CONFLICTS/sod-conflicts-view/review-required
 ```
 
 ### Flow B — Customer Defined View (URL contains no context)
@@ -93,7 +93,7 @@ updatePendoState({
   secondaryTab: 'review-required'
 });
 fireTransform();
-// Pendo sees: /smartaudit/sod/business-cycle-conflicts/security-groups-view/review-required
+// Pendo sees: …/checkGroupDetails/SEGREGATION_OF_DUTIES_BUSINESS_CYCLE_CONFLICTS/security-groups-view/review-required
 
 // Flow B — context NOT in browser URL, must be injected
 updatePendoState({
@@ -120,15 +120,15 @@ On every subsequent tab click in Flow B, `checkType` remains in `pendoState` fro
 ### Flow A
 
 ```
-/smartaudit/sod/business-cycle-conflicts/{primaryTab}/{secondaryTab}
+https://gmsng.eu.stage.kainossmart.com/web/#/audit/checkGroupDetails/SEGREGATION_OF_DUTIES_BUSINESS_CYCLE_CONFLICTS/{primaryTab}/{secondaryTab}
 ```
 
 | Navigation | Pendo URL |
 |---|---|
-| Page load, default tab | `/smartaudit/sod/business-cycle-conflicts/security-groups-view/review-required` |
-| Click SoD Conflicts View | `/smartaudit/sod/business-cycle-conflicts/sod-conflicts-view/review-required` |
-| Click Accepted sub-tab | `/smartaudit/sod/business-cycle-conflicts/sod-conflicts-view/accepted` |
-| Click Cases View | `/smartaudit/sod/business-cycle-conflicts/cases-view/review-required` |
+| Page load, default tab | `…/SEGREGATION_OF_DUTIES_BUSINESS_CYCLE_CONFLICTS/security-groups-view/review-required` |
+| Click SoD Conflicts View | `…/SEGREGATION_OF_DUTIES_BUSINESS_CYCLE_CONFLICTS/sod-conflicts-view/review-required` |
+| Click Accepted sub-tab | `…/SEGREGATION_OF_DUTIES_BUSINESS_CYCLE_CONFLICTS/sod-conflicts-view/accepted` |
+| Click Cases View | `…/SEGREGATION_OF_DUTIES_BUSINESS_CYCLE_CONFLICTS/cases-view/review-required` |
 
 ### Flow B
 
