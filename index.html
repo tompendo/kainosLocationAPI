@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartAudit — Pendo Location API Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: #f0f2f5; color: #1a1a2e; min-height: 100vh; font-size: 14px; }
+
+/* TOP NAV */
+.topnav { background: #1a3a6b; height: 52px; display: flex; align-items: center; padding: 0 20px; position: sticky; top: 0; z-index: 100; }
+.nav-logo { display: flex; align-items: center; gap: 8px; margin-right: 40px; cursor: pointer; }
+.nav-logo-dots { display: flex; align-items: center; gap: 3px; }
+.nav-logo-dots span { width: 8px; height: 8px; border-radius: 50%; display: block; }
+.nav-logo-dots span:nth-child(1) { background: #5b9cf6; }
+.nav-logo-dots span:nth-child(2) { background: #7eb8f7; }
+.nav-logo-dots span:nth-child(3) { background: #a8d4fa; }
+.nav-logo-text { font-size: 16px; font-weight: 700; color: white; letter-spacing: -0.3px; }
+.nav-logo-text em { color: #5b9cf6; font-style: normal; }
+.nav-links { display: flex; align-items: stretch; height: 52px; }
+.nav-link { display: flex; align-items: center; padding: 0 18px; font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.72); cursor: pointer; letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 3px solid transparent; transition: all 0.15s; white-space: nowrap; }
+.nav-link:hover { color: white; background: rgba(255,255,255,0.08); }
+.nav-link.active { color: white; border-bottom-color: #5b9cf6; }
+.nav-link .ch { font-size: 9px; margin-left: 4px; opacity: 0.7; }
+.nav-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.nav-help { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; font-weight: 700; cursor: pointer; }
+.nav-avatar { width: 32px; height: 32px; border-radius: 50%; background: #e8a838; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: white; cursor: pointer; }
+
+/* BREADCRUMB */
+.breadcrumb { padding: 10px 24px; display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.bc-a { color: #1a6fbb; cursor: pointer; } .bc-a:hover { text-decoration: underline; }
+.bc-sep { color: #aaa; }
+.bc-cur { color: #555; }
+
+/* PAGE HEADER */
+.page-hdr { padding: 8px 24px 0; }
+.check-lbl { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.title-row { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 4px; }
+.page-title { font-size: 26px; font-weight: 700; color: #1a1a2e; letter-spacing: -0.4px; line-height: 1.2; }
+.page-sub { font-size: 13px; color: #666; margin-bottom: 8px; }
+.status-line { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #555; margin-bottom: 16px; }
+.sdot { width: 10px; height: 10px; border-radius: 50%; background: #e53e3e; flex-shrink: 0; }
+
+/* ACTIONS BTN */
+.btn-act { display: flex; align-items: center; gap: 6px; padding: 8px 16px; background: #1a6fbb; color: white; border: none; border-radius: 4px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'Inter',sans-serif; white-space: nowrap; }
+.btn-act:hover { background: #155fa0; }
+
+/* STATS ROW */
+.stats-row { display: flex; padding: 0 24px 16px; border-bottom: 1px solid #dde1e7; }
+.stat { padding: 0 36px 0 0; margin-right: 36px; border-right: 1px solid #e0e3e8; }
+.stat:last-child { border-right: none; }
+.stat-lbl { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+.stat-val { font-size: 28px; font-weight: 700; color: #1a1a2e; letter-spacing: -0.5px; }
+
+/* PRIMARY TABS (blue bar) */
+.ptabs { display: flex; background: #1a5fa0; padding: 0 24px; }
+.ptab { padding: 12px 18px; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.68); cursor: pointer; letter-spacing: 0.06em; text-transform: uppercase; border-bottom: 3px solid transparent; transition: all 0.15s; white-space: nowrap; }
+.ptab:hover { color: white; background: rgba(255,255,255,0.08); }
+.ptab.active { color: white; border-bottom-color: #7dd3fc; background: rgba(255,255,255,0.1); }
+
+/* SECONDARY TABS (white sub-bar) */
+.stabs { display: flex; padding: 0 24px; background: white; border-bottom: 1px solid #dde1e7; }
+.stab { padding: 10px 16px; font-size: 12px; font-weight: 600; color: #888; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -1px; transition: all 0.15s; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+.stab:hover { color: #1a1a2e; }
+.stab.active { color: #1a1a2e; border-bottom-color: #1a1a2e; }
+
+/* CONTENT */
+.content { padding: 20px 24px; }
+.sec-hd { font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
+.sec-cnt { font-size: 12px; color: #888; margin-bottom: 12px; }
+
+/* FILTER BAR */
+.fbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.fsel { padding: 6px 10px; border: 1px solid #dde1e7; border-radius: 4px; font-size: 12px; color: #333; background: white; font-family: 'Inter',sans-serif; cursor: pointer; }
+.btn-sm { padding: 6px 14px; border-radius: 4px; font-size: 12px; font-weight: 500; cursor: pointer; border: none; font-family: 'Inter',sans-serif; }
+.btn-p { background: #1a6fbb; color: white; }
+.btn-o { background: white; color: #555; border: 1px solid #dde1e7; }
+.btn-o:hover { background: #f5f7fa; }
+
+/* TABLE */
+.tbl-wrap { background: white; border: 1px solid #dde1e7; border-radius: 4px; overflow: hidden; margin-bottom: 16px; }
+table { width: 100%; border-collapse: collapse; }
+thead { background: #f5f7fa; }
+th { text-align: left; font-size: 11px; font-weight: 600; color: #555; padding: 9px 12px; border-bottom: 2px solid #dde1e7; white-space: nowrap; cursor: pointer; user-select: none; }
+th:hover { background: #edf0f5; }
+.th-i { display: flex; align-items: center; gap: 4px; }
+.si { font-size: 10px; opacity: 0.45; }
+td { padding: 10px 12px; font-size: 13px; border-bottom: 1px solid #edf0f5; color: #333; vertical-align: middle; }
+tr:hover td { background: #f8fafc; }
+tr:last-child td { border-bottom: none; }
+.td-exp { color: #888; font-size: 12px; cursor: pointer; padding-left: 12px; }
+.td-id { color: #1a6fbb; font-weight: 600; cursor: pointer; }
+.td-id:hover { text-decoration: underline; }
+.br { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; }
+.br-h { background: #e53e3e; color: white; }
+.br-m { background: #dd6b20; color: white; }
+.br-l { background: #38a169; color: white; }
+
+/* PAGE VIEWS & PANES */
+.page-view { display: none; }
+.page-view.active { display: block; }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* DASHBOARD */
+.dash-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; max-width: 860px; }
+.dash-card { background: white; border: 1px solid #dde1e7; border-radius: 4px; padding: 20px 24px; cursor: pointer; transition: all 0.15s; position: relative; }
+.dash-card:hover { border-color: #1a6fbb; box-shadow: 0 2px 8px rgba(26,111,187,0.12); }
+.dc-tag { position: absolute; top: 12px; right: 12px; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; letter-spacing: 0.04em; }
+.dc-tag-good { background: #ebf8f1; color: #276749; border: 1px solid #c6f6d5; }
+.dc-tag-needs { background: #fff8eb; color: #744210; border: 1px solid #feebc8; }
+.dc-title { font-size: 14px; font-weight: 600; color: #1a1a2e; margin-bottom: 4px; padding-right: 100px; }
+.dc-sub { font-size: 12px; color: #888; margin-bottom: 14px; }
+.dc-val { font-size: 22px; font-weight: 700; }
+.dc-val.red { color: #e53e3e; }
+.dc-meta { font-size: 11px; color: #999; margin-top: 3px; }
+.dc-url { font-size: 10px; font-family: 'Courier New', monospace; color: #aaa; margin-top: 10px; padding: 5px 8px; background: #f8fafc; border-radius: 3px; border: 1px solid #e8ecf0; word-break: break-all; line-height: 1.5; }
+.dc-url strong { color: #1a6fbb; }
+
+/* PENDO PANEL */
+.pp { position: fixed; bottom: 16px; right: 16px; width: 420px; background: #0f1117; border: 1px solid #2a2f45; border-radius: 10px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.4); z-index: 9999; font-family: 'Courier New', monospace; }
+.pp-hdr { padding: 9px 14px; background: #181c27; border-bottom: 1px solid #2a2f45; display: flex; align-items: center; justify-content: space-between; }
+.pp-title { font-size: 11px; color: #4f8ef7; font-weight: 600; display: flex; align-items: center; gap: 7px; }
+.pp-dot { width: 7px; height: 7px; background: #3ecf8e; border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+.pp-body { padding: 10px 14px; }
+.pp-f { margin-bottom: 10px; }
+.pp-lbl { font-size: 9px; color: #7b82a0; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px; display: flex; align-items: center; gap: 6px; }
+.pp-badge { font-size: 8px; padding: 1px 6px; border-radius: 10px; font-weight: 700; letter-spacing: 0.05em; }
+.pp-badge-green { background: rgba(62,207,142,0.2); color: #3ecf8e; }
+.pp-badge-blue { background: rgba(79,142,247,0.2); color: #4f8ef7; }
+.pp-v { font-size: 11px; color: #3ecf8e; background: rgba(62,207,142,0.07); padding: 6px 9px; border-radius: 4px; word-break: break-all; line-height: 1.6; }
+.pp-v.dim { color: #7b82a0; }
+.pp-v .seg-fixed { color: #7b82a0; }
+.pp-v .seg-added { color: #3ecf8e; font-weight: 600; }
+.pp-tog { font-size: 10px; color: #7b82a0; cursor: pointer; background: none; border: none; font-family: monospace; }
+.pp-tog:hover { color: #4f8ef7; }
+.pp-divider { height: 1px; background: #2a2f45; margin: 8px 0; }
+.pp-event-log { max-height: 80px; overflow-y: auto; }
+.pp-event { font-size: 10px; color: #7b82a0; padding: 2px 0; border-bottom: 1px solid #1e2235; }
+.pp-event:last-child { border-bottom: none; }
+.pp-event .ev-time { color: #4a5068; margin-right: 6px; }
+.pp-event .ev-url { color: #4f8ef7; }
+
+::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: #f0f2f5; } ::-webkit-scrollbar-thumb { background: #c0c7d4; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- PENDO SNIPPET — no apiKey in snippet, key is embedded in CDN URL above -->
+<script>
+(function(publicAppId){
+    (function(p,e,n,d,o){var v,w,x,y,z;o=p[d]=p[d]||{};o._q=o._q||[];
+    v=['initialize','identify','updateOptions','pageLoad','track','trackAgent'];for(w=0,x=v.length;w<x;++w)(function(m){
+        o[m]=o[m]||function(){o._q[m===v[0]?'unshift':'push']([m].concat([].slice.call(arguments,0)));};})(v[w]);
+        y=e.createElement(n);y.async=!0;y.src='https://cdn.pendo.io/agent/static/'+publicAppId+'/pendo.js';
+        z=e.getElementsByTagName(n)[0];z.parentNode.insertBefore(y,z);})(window,document,'script','pendo');
+})('f7b6e27f-9751-4d15-6f47-249bff1cd16f');
+</script>
+
+<!--
+═══════════════════════════════════════════════════════════
+  PENDO STATE MODULE
+
+  Single source of truth for all navigation context.
+
+  FLOW A — Business Cycle Conflicts (URL contains context):
+    Browser URL already contains /business-cycle-conflicts
+    addTransforms only needs to append the active tab.
+    e.g. /smartaudit/sod/business-cycle-conflicts → addTransforms appends /sod-conflicts-view/review-required
+
+  FLOW B — Customer Defined View (URL contains NO context):
+    Browser URL is identical regardless of which check type.
+    addTransforms must inject the check type context AND the tab.
+    e.g. /smartaudit/sod/check-details → addTransforms injects /expenses-sod-custom-checks/security-groups-view/review-required
+═══════════════════════════════════════════════════════════
+-->
+<script>
+const pendoState = {
+  checkType:    null,   // null for Flow A (already in URL). Set for Flow B (must be injected).
+  primaryTab:   null,   // always set — which blue tab is active
+  secondaryTab: null    // always set — which white sub-tab is active
+};
+
+// The base browser URL for each flow — simulates what the SPA actually has in the address bar
+const BROWSER_URLS = {
+  'flow-a': 'https://smartaudit.kainos.com/smartaudit/sod/business-cycle-conflicts',
+  'flow-b': 'https://smartaudit.kainos.com/smartaudit/sod/check-details'  // same for ALL customer-defined check types
+};
+
+let currentFlow = null;
+
+function updatePendoState(u) {
+  Object.assign(pendoState, u);
+  refreshDebug();
+}
+
+function buildPendoUrl() {
+  const base = BROWSER_URLS[currentFlow] || 'https://smartaudit.kainos.com/smartaudit/sod';
+  const parts = [];
+
+  // Flow B only: inject check type context (not present in browser URL)
+  if (currentFlow === 'flow-b' && pendoState.checkType) {
+    parts.push(pendoState.checkType);
+  }
+
+  // Both flows: append active tab state
+  if (pendoState.primaryTab)   parts.push(pendoState.primaryTab);
+  if (pendoState.secondaryTab) parts.push(pendoState.secondaryTab);
+
+  return parts.length ? base + '/' + parts.join('/') : base;
+}
+
+// Each call to addTransforms fires an automatic pageLoad event in Pendo.
+// No explicit pendo.pageLoad() call required.
+// No clearing required — function always returns a complete fresh URL from current state.
+function fireTransform() {
+  if (typeof pendo !== 'undefined' && pendo.isReady && pendo.isReady()) {
+    pendo.location.addTransforms([{
+      attr: 'href',
+      action: 'Replace',
+      data: function() { return buildPendoUrl(); }
+    }]);
+  }
+  logEvent(buildPendoUrl());
+  refreshDebug();
+}
+
+// Event log for the debug panel
+const eventLog = [];
+function logEvent(url) {
+  const now = new Date();
+  const t = now.getHours().toString().padStart(2,'0') + ':' +
+             now.getMinutes().toString().padStart(2,'0') + ':' +
+             now.getSeconds().toString().padStart(2,'0');
+  eventLog.unshift({ time: t, url });
+  if (eventLog.length > 8) eventLog.pop();
+  renderEventLog();
+}
+
+function renderEventLog() {
+  const el = document.getElementById('pp-events');
+  if (!el) return;
+  el.innerHTML = eventLog.map(e =>
+    `<div class="pp-event"><span class="ev-time">${e.time}</span><span class="ev-url">${e.url}</span></div>`
+  ).join('');
+}
+
+function refreshDebug() {
+  const urlEl = document.getElementById('pp-url');
+  const browserEl = document.getElementById('pp-browser');
+  if (!urlEl || !currentFlow) return;
+
+  const pUrl = buildPendoUrl();
+  const bUrl = BROWSER_URLS[currentFlow] || '—';
+
+  // Render browser URL
+  browserEl.textContent = bUrl;
+
+  // Render Pendo URL with segments highlighted
+  if (currentFlow === 'flow-a') {
+    // Fixed part from browser URL, added tabs highlighted
+    const tabPart = [pendoState.primaryTab, pendoState.secondaryTab].filter(Boolean).join('/');
+    urlEl.innerHTML = `<span class="seg-fixed">${bUrl}/</span><span class="seg-added">${tabPart}</span>`;
+  } else {
+    // Everything after base is injected
+    const injected = [pendoState.checkType, pendoState.primaryTab, pendoState.secondaryTab].filter(Boolean).join('/');
+    urlEl.innerHTML = `<span class="seg-fixed">${bUrl}/</span><span class="seg-added">${injected}</span>`;
+  }
+}
+</script>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <div class="nav-logo" onclick="showDashboard()">
+    <div class="nav-logo-dots"><span></span><span></span><span></span></div>
+    <div class="nav-logo-text"><em>smart</em>audit</div>
+  </div>
+  <div class="nav-links">
+    <div class="nav-link active" onclick="showDashboard()">DASHBOARD</div>
+    <div class="nav-link">REPORTING</div>
+    <div class="nav-link">CONFIGURATION <span class="ch">▼</span></div>
+    <div class="nav-link">SECURITY SET-UP <span class="ch">▼</span></div>
+  </div>
+  <div class="nav-right">
+    <div class="nav-help">?</div>
+    <div class="nav-avatar">TD</div>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════
+     DASHBOARD
+════════════════════════════════════════ -->
+<div class="page-view active" id="view-dashboard">
+  <div style="padding:24px;">
+    <h2 style="font-size:20px;font-weight:700;color:#1a1a2e;margin-bottom:4px;">Dashboard</h2>
+    <p style="font-size:13px;color:#777;margin-bottom:24px;">Two check types are shown below. Each demonstrates a different Location API scenario.</p>
+
+    <div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;padding-bottom:6px;border-bottom:2px solid #e0e3e8;">Segregation of Duties</div>
+
+    <div class="dash-grid">
+
+      <!-- FLOW A -->
+      <div class="dash-card" onclick="goFlowA()">
+        <span class="dc-tag dc-tag-good">✓ URL contains context</span>
+        <div class="dc-title">Expenses - SoD - Business Cycle Conflicts</div>
+        <div class="dc-sub">Segregation of Duties · Preventative Check</div>
+        <div class="dc-val red">7/7</div>
+        <div class="dc-meta">SoD Conflicts · 544 Cases · 3 Tenants</div>
+        <div class="dc-url">
+          Browser URL: <strong>/smartaudit/sod/business-cycle-conflicts</strong><br>
+          Pendo sees: <strong>/business-cycle-conflicts/<span style="color:#e53e3e">sod-conflicts-view/review-required</span></strong><br>
+          <span style="color:#276749;">addTransforms appends tab state only</span>
+        </div>
+      </div>
+
+      <!-- FLOW B -->
+      <div class="dash-card" onclick="goFlowB()">
+        <span class="dc-tag dc-tag-needs">⚠ URL has no context</span>
+        <div class="dc-title">Expenses - SoD - Custom Checks</div>
+        <div class="dc-sub">Customer Defined View · Segregation of Duties</div>
+        <div class="dc-val red">5/5</div>
+        <div class="dc-meta">SoD Conflicts · 312 Cases · 3 Tenants</div>
+        <div class="dc-url">
+          Browser URL: <strong>/smartaudit/sod/check-details</strong> (same for ALL custom checks)<br>
+          Pendo sees: <strong>/<span style="color:#e53e3e">expenses-sod-custom-checks/sod-conflicts-view/review-required</span></strong><br>
+          <span style="color:#744210;">addTransforms must inject check type AND tab state</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="margin-top:24px;background:white;border:1px solid #dde1e7;border-radius:6px;padding:18px 20px;max-width:860px;">
+      <div style="font-size:12px;font-weight:700;color:#1a1a2e;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em;">Why these two flows exist</div>
+      <p style="font-size:13px;color:#555;line-height:1.7;">
+        <strong>Flow A</strong> — Kainos-defined check types (e.g. Business Cycle Conflicts) have their category in the browser URL. Pendo can read this directly. <code style="background:#f5f7fa;padding:1px 5px;border-radius:3px;font-size:12px;">addTransforms</code> only needs to append which tab the user is on — the check type context is already there.<br><br>
+        <strong>Flow B</strong> — Customer-defined check types all share the same browser URL (<code style="background:#f5f7fa;padding:1px 5px;border-radius:3px;font-size:12px;">/check-details</code>). Pendo cannot distinguish between them. <code style="background:#f5f7fa;padding:1px 5px;border-radius:3px;font-size:12px;">addTransforms</code> must inject the check type identity at page load — context available at that moment per Eamon's confirmation — and then update the tab state on each tab click.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     FLOW A — Business Cycle Conflicts
+     Browser URL already contains context.
+     addTransforms only appends tab state.
+════════════════════════════════════════ -->
+<div class="page-view" id="view-flow-a">
+  <div class="breadcrumb">
+    <span class="bc-a" onclick="showDashboard()">Dashboard</span>
+    <span class="bc-sep">›</span>
+    <span class="bc-cur">Expenses - SoD - Business Cycle Conflicts</span>
+  </div>
+  <div class="page-hdr">
+    <div class="check-lbl">Check Details</div>
+    <div class="title-row">
+      <div>
+        <div class="page-title">Expenses - SoD - Business Cycle Conflicts</div>
+        <div class="page-sub">Segregation of Duties - Preventative Check</div>
+      </div>
+      <button class="btn-act">ACTIONS <span class="ch">▼</span></button>
+    </div>
+    <div class="status-line">
+      <div class="sdot"></div>
+      <span>Not Completed on SUV wiremock2 gmsng_1</span>
+      <span style="color:#ccc;margin:0 4px;">|</span>
+      <span>Last Run on 14 Jul 2025 06:31</span>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat"><div class="stat-lbl">Security Group(s)</div><div class="stat-val">209</div></div>
+    <div class="stat"><div class="stat-lbl">SoD Conflicts</div><div class="stat-val">7/7</div></div>
+    <div class="stat"><div class="stat-lbl">Cases</div><div class="stat-val">544</div></div>
+    <div class="stat"><div class="stat-lbl">Tenants Monitored</div><div class="stat-val">3</div></div>
+  </div>
+
+  <!-- PRIMARY TABS -->
+  <div class="ptabs" id="a-ptab-bar">
+    <div class="ptab active" onclick="switchATab('security-groups-view',0)">SECURITY GROUP(S) VIEW</div>
+    <div class="ptab" onclick="switchATab('sod-conflicts-view',1)">SOD CONFLICTS VIEW</div>
+    <div class="ptab" onclick="switchATab('cases-view',2)">CASES VIEW</div>
+    <div class="ptab" onclick="switchATab('run-details',3)">RUN DETAILS</div>
+    <div class="ptab" onclick="switchATab('description',4)">DESCRIPTION</div>
+  </div>
+
+  <!-- SECURITY GROUPS VIEW -->
+  <div class="tab-pane active" id="a-pt-security-groups-view">
+    <div class="stabs" id="a-stab-sg">
+      <div class="stab active" onclick="switchASubTab('sg','review-required',0)">REVIEW REQUIRED</div>
+      <div class="stab" onclick="switchASubTab('sg','accepted',1)">ACCEPTED</div>
+      <div class="stab" onclick="switchASubTab('sg','closed',2)">CLOSED</div>
+    </div>
+    <div class="tab-pane active" id="a-sg-review-required">
+      <div class="content">
+        <div class="sec-hd">Security Groups</div><div class="sec-cnt">209 items</div>
+        <div class="fbar">
+          <select class="fsel"><option>All Tenants</option><option>gmsng_1</option><option>gmsng_2</option><option>gmsng_3</option></select>
+          <select class="fsel"><option>All Risk Ratings</option><option>High</option><option>Medium</option></select>
+          <button class="btn-sm btn-o">Clear Filters</button>
+          <button class="btn-sm btn-p">Export</button>
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr>
+            <th style="width:32px;"></th>
+            <th><div class="th-i">Security Group <span class="si">⇅</span></div></th>
+            <th><div class="th-i">SoD Conflict <span class="si">⇅</span></div></th>
+            <th><div class="th-i">Risk Rating <span class="si">⇅</span></div></th>
+            <th><div class="th-i">Cases <span class="si">⇅</span></div></th>
+            <th><div class="th-i">Tenant <span class="si">⇅</span></div></th>
+          </tr></thead>
+          <tbody>
+            <tr><td class="td-exp">∨</td><td>Expense Administrator</td><td>Expense Report Event - Initiate Maintain Payment Election</td><td><span class="br br-h">HIGH</span></td><td>225</td><td>gmsng_1</td></tr>
+            <tr><td class="td-exp">∨</td><td>AP Specialist</td><td>Expense Report Event - Approve Maintain Payment Election</td><td><span class="br br-h">HIGH</span></td><td>110</td><td>gmsng_1</td></tr>
+            <tr><td class="td-exp">∨</td><td>Finance Manager</td><td>Expense Report Event - Initiate Spend Authorization</td><td><span class="br br-h">HIGH</span></td><td>67</td><td>gmsng_2</td></tr>
+            <tr><td class="td-exp">∨</td><td>Expense Auditor</td><td>Expense Report Event - Approve Spend Authorization</td><td><span class="br br-h">HIGH</span></td><td>42</td><td>gmsng_1</td></tr>
+            <tr><td class="td-exp">∨</td><td>Procurement Lead</td><td>Expense Report Event - Initiate Procurement</td><td><span class="br br-m">MED</span></td><td>22</td><td>gmsng_3</td></tr>
+            <tr><td class="td-exp">∨</td><td>GL Controller</td><td>Spend Authorization Event - Initiate Maintain Payment Election</td><td><span class="br br-m">MED</span></td><td>14</td><td>gmsng_2</td></tr>
+            <tr><td class="td-exp">∨</td><td>Treasury Analyst</td><td>Spend Authorization Event - Approve Maintain Payment Election</td><td><span class="br br-h">HIGH</span></td><td>2</td><td>gmsng_1</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+    <div class="tab-pane" id="a-sg-accepted"><div class="content"><div class="sec-hd">Accepted Security Groups</div><div class="sec-cnt">12 items</div><div class="tbl-wrap"><table><thead><tr><th>Security Group</th><th>SoD Conflict</th><th>Risk</th><th>Accepted By</th><th>Date</th></tr></thead><tbody><tr><td>Expense Report - Auditor</td><td>Expense Report Event - Initiate Maintain Payment Election</td><td><span class="br br-l">LOW</span></td><td>j.smith</td><td>12 Mar 2026</td></tr></tbody></table></div></div></div>
+    <div class="tab-pane" id="a-sg-closed"><div class="content"><div class="sec-hd">Closed Security Groups</div><div class="sec-cnt">34 items</div><div class="tbl-wrap"><table><thead><tr><th>Security Group</th><th>SoD Conflict</th><th>Resolved By</th><th>Resolution</th><th>Date</th></tr></thead><tbody><tr><td>GL Administrator</td><td>Expense Report Event - Initiate Maintain Payment Election</td><td>t.audit</td><td>Role removed</td><td>15 Apr 2026</td></tr></tbody></table></div></div></div>
+  </div>
+
+  <!-- SOD CONFLICTS VIEW -->
+  <div class="tab-pane" id="a-pt-sod-conflicts-view">
+    <div class="stabs" id="a-stab-sod">
+      <div class="stab active" onclick="switchASubTab('sod','review-required',0)">REVIEW REQUIRED</div>
+      <div class="stab" onclick="switchASubTab('sod','accepted',1)">ACCEPTED</div>
+      <div class="stab" onclick="switchASubTab('sod','closed',2)">CLOSED</div>
+    </div>
+    <div class="tab-pane active" id="a-sod-review-required">
+      <div class="content">
+        <div class="sec-hd">SoD Conflicts</div><div class="sec-cnt">7 items</div>
+        <div class="tbl-wrap"><table>
+          <thead><tr>
+            <th style="width:32px;"></th>
+            <th><div class="th-i">ID <span class="si">⇅</span></div></th>
+            <th><div class="th-i">SoD Conflict <span class="si">⇅</span></div></th>
+            <th><div class="th-i">Risk Rating <span class="si">⇅</span></div></th>
+            <th><div class="th-i">Open <span class="si">⇅</span></div></th>
+            <th><div class="th-i">Revalidate <span class="si">⇅</span></div></th>
+            <th><div class="th-i">In Progress <span class="si">⇅</span></div></th>
+            <th><div class="th-i">Action Required <span class="si">⇅</span></div></th>
+          </tr></thead>
+          <tbody>
+            <tr><td class="td-exp">∨</td><td class="td-id">277</td><td>Expense Report Event - Initiate Maintain Payment Election</td><td><span class="br br-h">HIGH</span></td><td>225</td><td>0</td><td>0</td><td>0</td></tr>
+            <tr><td class="td-exp">∨</td><td class="td-id">278</td><td>Expense Report Event - Approve Maintain Payment Election</td><td><span class="br br-h">HIGH</span></td><td>110</td><td>0</td><td>0</td><td>0</td></tr>
+            <tr><td class="td-exp">∨</td><td class="td-id">281</td><td>Expense Report Event - Initiate Spend Authorization</td><td><span class="br br-h">HIGH</span></td><td>104</td><td>2</td><td>1</td><td>3</td></tr>
+            <tr><td class="td-exp">∨</td><td class="td-id">282</td><td>Expense Report Event - Approve Spend Authorization</td><td><span class="br br-h">HIGH</span></td><td>67</td><td>0</td><td>0</td><td>0</td></tr>
+            <tr><td class="td-exp">∨</td><td class="td-id">285</td><td>Expense Report Event - Initiate Procurement</td><td><span class="br br-m">MED</span></td><td>22</td><td>1</td><td>0</td><td>1</td></tr>
+            <tr><td class="td-exp">∨</td><td class="td-id">289</td><td>Spend Authorization Event - Initiate Maintain Payment Election</td><td><span class="br br-m">MED</span></td><td>14</td><td>0</td><td>2</td><td>0</td></tr>
+            <tr><td class="td-exp">∨</td><td class="td-id">291</td><td>Spend Authorization Event - Approve Maintain Payment Election</td><td><span class="br br-h">HIGH</span></td><td>2</td><td>0</td><td>0</td><td>0</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+    <div class="tab-pane" id="a-sod-accepted"><div class="content"><div class="sec-hd">Accepted Conflicts</div><div class="sec-cnt">3 items</div></div></div>
+    <div class="tab-pane" id="a-sod-closed"><div class="content"><div class="sec-hd">Closed Conflicts</div><div class="sec-cnt">8 items</div></div></div>
+  </div>
+
+  <!-- CASES VIEW -->
+  <div class="tab-pane" id="a-pt-cases-view">
+    <div class="stabs" id="a-stab-cases">
+      <div class="stab active" onclick="switchASubTab('cases','review-required',0)">REVIEW REQUIRED</div>
+      <div class="stab" onclick="switchASubTab('cases','accepted',1)">ACCEPTED</div>
+      <div class="stab" onclick="switchASubTab('cases','closed',2)">CLOSED</div>
+    </div>
+    <div class="tab-pane active" id="a-cases-review-required">
+      <div class="content"><div class="sec-hd">Cases</div><div class="sec-cnt">544 items</div>
+        <div class="tbl-wrap"><table><thead><tr><th><div class="th-i">Case ID <span class="si">⇅</span></div></th><th><div class="th-i">SoD Conflict <span class="si">⇅</span></div></th><th><div class="th-i">User <span class="si">⇅</span></div></th><th><div class="th-i">Risk <span class="si">⇅</span></div></th><th><div class="th-i">Status <span class="si">⇅</span></div></th></tr></thead>
+        <tbody>
+          <tr><td><span class="td-id">CASE-4471</span></td><td>Expense Report Event - Initiate Maintain Payment Election</td><td>j.smith@kainos.com</td><td><span class="br br-h">HIGH</span></td><td>Open</td></tr>
+          <tr><td><span class="td-id">CASE-4470</span></td><td>Expense Report Event - Approve Maintain Payment Election</td><td>m.jones@kainos.com</td><td><span class="br br-h">HIGH</span></td><td>Open</td></tr>
+          <tr><td><span class="td-id">CASE-4469</span></td><td>Expense Report Event - Initiate Spend Authorization</td><td>r.brown@kainos.com</td><td><span class="br br-m">MED</span></td><td>In Progress</td></tr>
+        </tbody></table></div>
+      </div>
+    </div>
+    <div class="tab-pane" id="a-cases-accepted"><div class="content"><div class="sec-hd">Accepted Cases</div><div class="sec-cnt">41 items</div></div></div>
+    <div class="tab-pane" id="a-cases-closed"><div class="content"><div class="sec-hd">Closed Cases</div><div class="sec-cnt">128 items</div></div></div>
+  </div>
+
+  <!-- RUN DETAILS -->
+  <div class="tab-pane" id="a-pt-run-details">
+    <div class="content"><div class="sec-hd">Run Details</div>
+      <div style="margin-top:16px;background:white;border:1px solid #dde1e7;border-radius:4px;padding:20px;max-width:500px;">
+        <table style="width:100%;border-collapse:collapse;">
+          <tr><td style="padding:8px 0;font-size:12px;color:#888;width:140px;border-bottom:1px solid #f5f5f5;">Run Status</td><td style="padding:8px 0;font-size:13px;color:#e53e3e;font-weight:600;border-bottom:1px solid #f5f5f5;">● Not Completed</td></tr>
+          <tr><td style="padding:8px 0;font-size:12px;color:#888;border-bottom:1px solid #f5f5f5;">Tenant</td><td style="padding:8px 0;font-size:13px;border-bottom:1px solid #f5f5f5;">wiremock2 gmsng_1</td></tr>
+          <tr><td style="padding:8px 0;font-size:12px;color:#888;">Last Run</td><td style="padding:8px 0;font-size:13px;">14 Jul 2025 06:31</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- DESCRIPTION -->
+  <div class="tab-pane" id="a-pt-description">
+    <div class="content"><div class="sec-hd">Description</div>
+      <div style="margin-top:16px;background:white;border:1px solid #dde1e7;border-radius:4px;padding:20px;max-width:700px;font-size:13px;color:#555;line-height:1.7;">
+        This check identifies users assigned roles allowing them to both initiate and approve expense transactions within the same business cycle. <strong>Check Type:</strong> Preventative · <strong>Module:</strong> Segregation of Duties
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     FLOW B — Customer Defined View
+     Browser URL is /check-details for ALL customer check types.
+     addTransforms must inject check type context AND tab state.
+════════════════════════════════════════ -->
+<div class="page-view" id="view-flow-b">
+  <div class="breadcrumb">
+    <span class="bc-a" onclick="showDashboard()">Dashboard</span>
+    <span class="bc-sep">›</span>
+    <span class="bc-cur">Expenses - SoD - Custom Checks</span>
+  </div>
+  <div class="page-hdr">
+    <div class="check-lbl">Check Details</div>
+    <div class="title-row">
+      <div>
+        <div class="page-title">Expenses - SoD - Custom Checks</div>
+        <div class="page-sub">Customer Defined View · Segregation of Duties</div>
+      </div>
+      <button class="btn-act">ACTIONS <span class="ch">▼</span></button>
+    </div>
+    <div class="status-line">
+      <div class="sdot"></div>
+      <span>Not Completed on SUV wiremock2 gmsng_1</span>
+      <span style="color:#ccc;margin:0 4px;">|</span>
+      <span>Last Run on 14 Jul 2025 06:31</span>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat"><div class="stat-lbl">Security Group(s)</div><div class="stat-val">184</div></div>
+    <div class="stat"><div class="stat-lbl">SoD Conflicts</div><div class="stat-val">5/5</div></div>
+    <div class="stat"><div class="stat-lbl">Cases</div><div class="stat-val">312</div></div>
+    <div class="stat"><div class="stat-lbl">Tenants Monitored</div><div class="stat-val">3</div></div>
+  </div>
+
+  <!-- PRIMARY TABS -->
+  <div class="ptabs" id="b-ptab-bar">
+    <div class="ptab active" onclick="switchBTab('security-groups-view',0)">SECURITY GROUP(S) VIEW</div>
+    <div class="ptab" onclick="switchBTab('sod-conflicts-view',1)">SOD CONFLICTS VIEW</div>
+    <div class="ptab" onclick="switchBTab('cases-view',2)">CASES VIEW</div>
+    <div class="ptab" onclick="switchBTab('run-details',3)">RUN DETAILS</div>
+    <div class="ptab" onclick="switchBTab('description',4)">DESCRIPTION</div>
+  </div>
+
+  <!-- SECURITY GROUPS VIEW -->
+  <div class="tab-pane active" id="b-pt-security-groups-view">
+    <div class="stabs" id="b-stab-sg">
+      <div class="stab active" onclick="switchBSubTab('sg','review-required',0)">REVIEW REQUIRED</div>
+      <div class="stab" onclick="switchBSubTab('sg','accepted',1)">ACCEPTED</div>
+      <div class="stab" onclick="switchBSubTab('sg','closed',2)">CLOSED</div>
+    </div>
+    <div class="tab-pane active" id="b-sg-review-required">
+      <div class="content">
+        <div class="sec-hd">Security Groups</div><div class="sec-cnt">184 items</div>
+        <div class="fbar">
+          <select class="fsel"><option>All Tenants</option><option>gmsng_1</option><option>gmsng_2</option></select>
+          <select class="fsel"><option>All Risk Ratings</option><option>High</option><option>Medium</option></select>
+          <button class="btn-sm btn-o">Clear Filters</button>
+          <button class="btn-sm btn-p">Export</button>
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr>
+            <th style="width:32px;"></th>
+            <th><div class="th-i">Security Group <span class="si">⇅</span></div></th>
+            <th><div class="th-i">SoD Conflict <span class="si">⇅</span></div></th>
+            <th><div class="th-i">Risk Rating <span class="si">⇅</span></div></th>
+            <th><div class="th-i">Cases <span class="si">⇅</span></div></th>
+            <th><div class="th-i">Tenant <span class="si">⇅</span></div></th>
+          </tr></thead>
+          <tbody>
+            <tr><td class="td-exp">∨</td><td>Custom AP Group A</td><td>Custom Rule - Initiate Maintain Payment Election</td><td><span class="br br-h">HIGH</span></td><td>142</td><td>gmsng_1</td></tr>
+            <tr><td class="td-exp">∨</td><td>Custom AP Group B</td><td>Custom Rule - Approve Maintain Payment Election</td><td><span class="br br-h">HIGH</span></td><td>88</td><td>gmsng_1</td></tr>
+            <tr><td class="td-exp">∨</td><td>Custom Finance Group</td><td>Custom Rule - Initiate Spend Authorization</td><td><span class="br br-m">MED</span></td><td>51</td><td>gmsng_2</td></tr>
+            <tr><td class="td-exp">∨</td><td>Custom Procurement Group</td><td>Custom Rule - Initiate Procurement</td><td><span class="br br-m">MED</span></td><td>19</td><td>gmsng_2</td></tr>
+            <tr><td class="td-exp">∨</td><td>Custom Treasury Group</td><td>Custom Rule - Approve Spend Authorization</td><td><span class="br br-h">HIGH</span></td><td>12</td><td>gmsng_1</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+    <div class="tab-pane" id="b-sg-accepted"><div class="content"><div class="sec-hd">Accepted Security Groups</div><div class="sec-cnt">8 items</div></div></div>
+    <div class="tab-pane" id="b-sg-closed"><div class="content"><div class="sec-hd">Closed Security Groups</div><div class="sec-cnt">21 items</div></div></div>
+  </div>
+
+  <!-- SOD CONFLICTS VIEW -->
+  <div class="tab-pane" id="b-pt-sod-conflicts-view">
+    <div class="stabs" id="b-stab-sod">
+      <div class="stab active" onclick="switchBSubTab('sod','review-required',0)">REVIEW REQUIRED</div>
+      <div class="stab" onclick="switchBSubTab('sod','accepted',1)">ACCEPTED</div>
+      <div class="stab" onclick="switchBSubTab('sod','closed',2)">CLOSED</div>
+    </div>
+    <div class="tab-pane active" id="b-sod-review-required">
+      <div class="content">
+        <div class="sec-hd">SoD Conflicts</div><div class="sec-cnt">5 items</div>
+        <div class="tbl-wrap"><table>
+          <thead><tr>
+            <th style="width:32px;"></th>
+            <th><div class="th-i">ID <span class="si">⇅</span></div></th>
+            <th><div class="th-i">SoD Conflict <span class="si">⇅</span></div></th>
+            <th><div class="th-i">Risk Rating <span class="si">⇅</span></div></th>
+            <th><div class="th-i">Open <span class="si">⇅</span></div></th>
+            <th><div class="th-i">Revalidate <span class="si">⇅</span></div></th>
+            <th><div class="th-i">In Progress <span class="si">⇅</span></div></th>
+            <th><div class="th-i">Action Required <span class="si">⇅</span></div></th>
+          </tr></thead>
+          <tbody>
+            <tr><td class="td-exp">∨</td><td class="td-id">301</td><td>Custom Rule - Initiate Maintain Payment Election</td><td><span class="br br-h">HIGH</span></td><td>142</td><td>0</td><td>0</td><td>0</td></tr>
+            <tr><td class="td-exp">∨</td><td class="td-id">302</td><td>Custom Rule - Approve Maintain Payment Election</td><td><span class="br br-h">HIGH</span></td><td>88</td><td>1</td><td>0</td><td>2</td></tr>
+            <tr><td class="td-exp">∨</td><td class="td-id">303</td><td>Custom Rule - Initiate Spend Authorization</td><td><span class="br br-m">MED</span></td><td>51</td><td>0</td><td>1</td><td>0</td></tr>
+            <tr><td class="td-exp">∨</td><td class="td-id">304</td><td>Custom Rule - Initiate Procurement</td><td><span class="br br-m">MED</span></td><td>19</td><td>0</td><td>0</td><td>1</td></tr>
+            <tr><td class="td-exp">∨</td><td class="td-id">305</td><td>Custom Rule - Approve Spend Authorization</td><td><span class="br br-h">HIGH</span></td><td>12</td><td>0</td><td>0</td><td>0</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+    <div class="tab-pane" id="b-sod-accepted"><div class="content"><div class="sec-hd">Accepted Conflicts</div><div class="sec-cnt">2 items</div></div></div>
+    <div class="tab-pane" id="b-sod-closed"><div class="content"><div class="sec-hd">Closed Conflicts</div><div class="sec-cnt">5 items</div></div></div>
+  </div>
+
+  <!-- CASES VIEW -->
+  <div class="tab-pane" id="b-pt-cases-view">
+    <div class="stabs" id="b-stab-cases">
+      <div class="stab active" onclick="switchBSubTab('cases','review-required',0)">REVIEW REQUIRED</div>
+      <div class="stab" onclick="switchBSubTab('cases','accepted',1)">ACCEPTED</div>
+      <div class="stab" onclick="switchBSubTab('cases','closed',2)">CLOSED</div>
+    </div>
+    <div class="tab-pane active" id="b-cases-review-required">
+      <div class="content"><div class="sec-hd">Cases</div><div class="sec-cnt">312 items</div>
+        <div class="tbl-wrap"><table><thead><tr><th><div class="th-i">Case ID <span class="si">⇅</span></div></th><th><div class="th-i">SoD Conflict <span class="si">⇅</span></div></th><th><div class="th-i">User <span class="si">⇅</span></div></th><th><div class="th-i">Risk <span class="si">⇅</span></div></th><th><div class="th-i">Status <span class="si">⇅</span></div></th></tr></thead>
+        <tbody>
+          <tr><td><span class="td-id">CASE-5201</span></td><td>Custom Rule - Initiate Maintain Payment Election</td><td>k.murphy@kainos.com</td><td><span class="br br-h">HIGH</span></td><td>Open</td></tr>
+          <tr><td><span class="td-id">CASE-5200</span></td><td>Custom Rule - Approve Maintain Payment Election</td><td>p.chen@kainos.com</td><td><span class="br br-h">HIGH</span></td><td>Open</td></tr>
+          <tr><td><span class="td-id">CASE-5199</span></td><td>Custom Rule - Initiate Spend Authorization</td><td>l.brady@kainos.com</td><td><span class="br br-m">MED</span></td><td>In Progress</td></tr>
+        </tbody></table></div>
+      </div>
+    </div>
+    <div class="tab-pane" id="b-cases-accepted"><div class="content"><div class="sec-hd">Accepted Cases</div><div class="sec-cnt">28 items</div></div></div>
+    <div class="tab-pane" id="b-cases-closed"><div class="content"><div class="sec-hd">Closed Cases</div><div class="sec-cnt">74 items</div></div></div>
+  </div>
+
+  <!-- RUN DETAILS -->
+  <div class="tab-pane" id="b-pt-run-details">
+    <div class="content"><div class="sec-hd">Run Details</div>
+      <div style="margin-top:16px;background:white;border:1px solid #dde1e7;border-radius:4px;padding:20px;max-width:500px;">
+        <table style="width:100%;border-collapse:collapse;">
+          <tr><td style="padding:8px 0;font-size:12px;color:#888;width:140px;border-bottom:1px solid #f5f5f5;">Run Status</td><td style="padding:8px 0;font-size:13px;color:#e53e3e;font-weight:600;border-bottom:1px solid #f5f5f5;">● Not Completed</td></tr>
+          <tr><td style="padding:8px 0;font-size:12px;color:#888;border-bottom:1px solid #f5f5f5;">Tenant</td><td style="padding:8px 0;font-size:13px;border-bottom:1px solid #f5f5f5;">wiremock2 gmsng_1</td></tr>
+          <tr><td style="padding:8px 0;font-size:12px;color:#888;">Last Run</td><td style="padding:8px 0;font-size:13px;">14 Jul 2025 06:31</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- DESCRIPTION -->
+  <div class="tab-pane" id="b-pt-description">
+    <div class="content"><div class="sec-hd">Description</div>
+      <div style="margin-top:16px;background:white;border:1px solid #dde1e7;border-radius:4px;padding:20px;max-width:700px;font-size:13px;color:#555;line-height:1.7;">
+        Customer-defined check type. The browser URL for this view is <code style="background:#f5f7fa;padding:1px 5px;border-radius:3px;">/check-details</code> regardless of which customer check type is loaded. Pendo cannot distinguish this from any other customer check type without the Location API injecting the check type identifier.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PENDO DEBUG PANEL -->
+<div class="pp">
+  <div class="pp-hdr">
+    <div class="pp-title"><div class="pp-dot"></div>Pendo Location API — Live</div>
+    <button class="pp-tog" onclick="var b=document.getElementById('pp-bd');b.style.display=b.style.display==='none'?'block':'none'">[ toggle ]</button>
+  </div>
+  <div class="pp-body" id="pp-bd">
+    <div class="pp-f">
+      <div class="pp-lbl">Browser URL (what the SPA has)</div>
+      <div class="pp-v dim" id="pp-browser">Navigate to a check type to begin</div>
+    </div>
+    <div class="pp-f">
+      <div class="pp-lbl">
+        Pendo URL (after addTransforms)
+        <span class="pp-badge pp-badge-green" id="pp-flow-badge" style="display:none;"></span>
+      </div>
+      <div class="pp-v dim" id="pp-url">—</div>
+    </div>
+    <div class="pp-divider"></div>
+    <div class="pp-f">
+      <div class="pp-lbl">pageLoad events fired this session</div>
+      <div class="pp-event-log" id="pp-events">
+        <div class="pp-event" style="color:#4a5068;font-style:italic;">No events yet — navigate to a check type</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════
+// NAVIGATION CONTROLLERS
+// ════════════════════════════════════════
+
+function showDashboard() {
+  hideAll();
+  document.getElementById('view-dashboard').classList.add('active');
+  currentFlow = null;
+  // Reset debug panel
+  document.getElementById('pp-browser').textContent = 'Navigate to a check type to begin';
+  document.getElementById('pp-browser').className = 'pp-v dim';
+  document.getElementById('pp-url').textContent = '—';
+  document.getElementById('pp-url').className = 'pp-v dim';
+  document.getElementById('pp-flow-badge').style.display = 'none';
+}
+
+// ── FLOW A: Business Cycle Conflicts ─────────────────────────────
+// Browser URL already contains /business-cycle-conflicts
+// addTransforms only appends tab state on top of that
+function goFlowA() {
+  currentFlow = 'flow-a';
+  hideAll();
+  document.getElementById('view-flow-a').classList.add('active');
+  resetFlowATabs();
+
+  document.getElementById('pp-flow-badge').textContent = 'FLOW A — URL contains context';
+  document.getElementById('pp-flow-badge').className = 'pp-badge pp-badge-green';
+  document.getElementById('pp-flow-badge').style.display = 'inline';
+
+  // Context (business-cycle-conflicts) is already in the browser URL.
+  // addTransforms only needs to add the default tab state.
+  updatePendoState({
+    checkType:    null,                    // not needed — already in browser URL
+    primaryTab:   'security-groups-view',  // default primary tab
+    secondaryTab: 'review-required'        // default secondary tab
+  });
+  fireTransform();
+}
+
+function switchATab(tabId, idx) {
+  document.querySelectorAll('#a-ptab-bar .ptab').forEach((t,i) => t.classList.toggle('active', i===idx));
+  document.querySelectorAll('[id^="a-pt-"]').forEach(p => p.classList.remove('active'));
+  document.getElementById('a-pt-'+tabId).classList.add('active');
+
+  const prefix = tabId==='security-groups-view'?'sg' : tabId==='sod-conflicts-view'?'sod' : tabId==='cases-view'?'cases' : null;
+  if (prefix) { resetASubTabs(prefix); }
+
+  // addTransforms fires — updates primaryTab, resets secondaryTab to default
+  updatePendoState({ primaryTab: tabId, secondaryTab: prefix ? 'review-required' : null });
+  fireTransform();
+}
+
+function switchASubTab(prefix, tabId, idx) {
+  resetASubTabs(prefix);
+  document.querySelectorAll('#a-stab-'+prefix+' .stab').forEach((t,i) => t.classList.toggle('active', i===idx));
+  document.getElementById('a-'+prefix+'-'+tabId).classList.add('active');
+
+  // addTransforms fires — only secondaryTab changes
+  updatePendoState({ secondaryTab: tabId });
+  fireTransform();
+}
+
+function resetASubTabs(prefix) {
+  ['review-required','accepted','closed'].forEach(id => {
+    const el = document.getElementById('a-'+prefix+'-'+id);
+    if (el) el.classList.remove('active');
+  });
+}
+
+function resetFlowATabs() {
+  document.querySelectorAll('#a-ptab-bar .ptab').forEach((t,i) => t.classList.toggle('active', i===0));
+  document.querySelectorAll('[id^="a-pt-"]').forEach(p => p.classList.remove('active'));
+  document.getElementById('a-pt-security-groups-view').classList.add('active');
+  resetASubTabs('sg');
+  document.getElementById('a-sg-review-required').classList.add('active');
+  ['sg','sod','cases'].forEach(p => {
+    if (document.getElementById('a-stab-'+p)) {
+      document.querySelectorAll('#a-stab-'+p+' .stab').forEach((t,i) => t.classList.toggle('active', i===0));
+    }
+  });
+}
+
+// ── FLOW B: Customer Defined View ────────────────────────────────
+// Browser URL is /check-details for ALL customer check types.
+// addTransforms must inject the check type identifier AND the tab state.
+function goFlowB() {
+  currentFlow = 'flow-b';
+  hideAll();
+  document.getElementById('view-flow-b').classList.add('active');
+  resetFlowBTabs();
+
+  document.getElementById('pp-flow-badge').textContent = 'FLOW B — URL has no context';
+  document.getElementById('pp-flow-badge').className = 'pp-badge pp-badge-blue';
+  document.getElementById('pp-flow-badge').style.display = 'inline';
+
+  // Context NOT in browser URL — must be injected by addTransforms.
+  // Check type is available at page load (per Eamon: "the time you click the page, when it starts to load")
+  // Write it to state here, before fireTransform() is called.
+  updatePendoState({
+    checkType:    'expenses-sod-custom-checks',  // injected — not in browser URL
+    primaryTab:   'security-groups-view',
+    secondaryTab: 'review-required'
+  });
+  fireTransform();
+}
+
+function switchBTab(tabId, idx) {
+  document.querySelectorAll('#b-ptab-bar .ptab').forEach((t,i) => t.classList.toggle('active', i===idx));
+  document.querySelectorAll('[id^="b-pt-"]').forEach(p => p.classList.remove('active'));
+  document.getElementById('b-pt-'+tabId).classList.add('active');
+
+  const prefix = tabId==='security-groups-view'?'sg' : tabId==='sod-conflicts-view'?'sod' : tabId==='cases-view'?'cases' : null;
+  if (prefix) { resetBSubTabs(prefix); }
+
+  // addTransforms fires — checkType stays in state from page load, only primaryTab changes
+  updatePendoState({ primaryTab: tabId, secondaryTab: prefix ? 'review-required' : null });
+  fireTransform();
+}
+
+function switchBSubTab(prefix, tabId, idx) {
+  resetBSubTabs(prefix);
+  document.querySelectorAll('#b-stab-'+prefix+' .stab').forEach((t,i) => t.classList.toggle('active', i===idx));
+  document.getElementById('b-'+prefix+'-'+tabId).classList.add('active');
+
+  // addTransforms fires — checkType and primaryTab unchanged, only secondaryTab updates
+  updatePendoState({ secondaryTab: tabId });
+  fireTransform();
+}
+
+function resetBSubTabs(prefix) {
+  ['review-required','accepted','closed'].forEach(id => {
+    const el = document.getElementById('b-'+prefix+'-'+id);
+    if (el) el.classList.remove('active');
+  });
+}
+
+function resetFlowBTabs() {
+  document.querySelectorAll('#b-ptab-bar .ptab').forEach((t,i) => t.classList.toggle('active', i===0));
+  document.querySelectorAll('[id^="b-pt-"]').forEach(p => p.classList.remove('active'));
+  document.getElementById('b-pt-security-groups-view').classList.add('active');
+  resetBSubTabs('sg');
+  document.getElementById('b-sg-review-required').classList.add('active');
+  ['sg','sod','cases'].forEach(p => {
+    if (document.getElementById('b-stab-'+p)) {
+      document.querySelectorAll('#b-stab-'+p+' .stab').forEach((t,i) => t.classList.toggle('active', i===0));
+    }
+  });
+}
+
+// ── HELPERS ──────────────────────────────────────────────────────
+function hideAll() {
+  document.querySelectorAll('.page-view').forEach(v => v.classList.remove('active'));
+}
+
+// ── PENDO INIT ───────────────────────────────────────────────────
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    try {
+      pendo.initialize({
+        visitor: {
+          id: 'demo-user-td-001',
+          role: 'auditor',
+          tenant: 'kainos-smartaudit'
+        },
+        account: {
+          id:   'kainos-smartaudit-demo',
+          name: 'Kainos SmartAudit'
+        }
+      });
+    } catch(e) { /* SDK loads async */ }
+  }, 800);
+});
+</script>
+</body>
+</html>
